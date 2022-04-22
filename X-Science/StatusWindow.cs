@@ -22,6 +22,8 @@ namespace ScienceChecklist
         private readonly Texture2D _GfxAudioAlertOff;
         private readonly Texture2D _GfxResultsWindow;
         private readonly Texture2D _GfxResultsWindowOff;
+        private readonly Texture2D _GfxCollectLabData;
+        private readonly Texture2D _GfxCollectLabDataOff;
 
         private readonly ExperimentFilter _filter;
         private readonly ScienceChecklistAddon _parent;
@@ -64,6 +66,8 @@ namespace ScienceChecklist
             _GfxAudioAlertOff = TextureHelper.FromResource("ScienceChecklist.icons.audio-alert-off.png", 13, 13);
             _GfxResultsWindow = TextureHelper.FromResource("ScienceChecklist.icons.report.png", 13, 13);
             _GfxResultsWindowOff = TextureHelper.FromResource("ScienceChecklist.icons.report-x.png", 13, 13);
+            _GfxCollectLabData = TextureHelper.FromResource("ScienceChecklist.icons.report.png", 13, 13);
+            _GfxCollectLabDataOff = TextureHelper.FromResource("ScienceChecklist.icons.report-x.png", 13, 13);
 
             _availableScienceExperiments = new Dictionary<string, bool>();
 
@@ -192,7 +196,7 @@ namespace ScienceChecklist
                 {
                     var experiment = _filter.DisplayScienceInstances[i];
 
-                    if (experiment.NextScienceIncome >= _parent.Config.ScienceThreshold)
+                    if (experiment.NextScienceIncome >= _parent.Config.ScienceThreshold || _parent.Config.CollectLabData)
                     {
                         var rect = new Rect(wScale(5), Top, wScale(250), wScale(30));
                         DrawExperiment(experiment, rect);
@@ -244,6 +248,19 @@ namespace ScienceChecklist
             {
                 _parent.Config.ShowResultsWindow = !_parent.Config.ShowResultsWindow;
                 _parent.Config.Save();
+            }
+
+
+
+            if (_parent.Config.CollectLabData)
+                Content = new GUIContent(_GfxCollectLabData, "Collect data for lab processing");
+            else
+                Content = new GUIContent(_GfxCollectLabDataOff, "Normal science collection");
+            if (GUILayout.Button(Content, GUILayout.Width(wScale(36)), GUILayout.Height(wScale(32))))
+            {
+                _parent.Config.CollectLabData = !_parent.Config.CollectLabData;
+                _parent.Config.Save();
+                _filter.UpdateFilter();
             }
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
@@ -333,19 +350,25 @@ namespace ScienceChecklist
 
             if (ExperimentRunnable)
             {
-                _experimentButtonStyle.normal.textColor = exp.IsComplete ? Color.green : Color.yellow;
-                if (GUI.Button(buttonRect, exp.ShortDescription + scienceValueString, _experimentButtonStyle))
+                if (_parent.Config.CollectLabData)
+                    _experimentButtonStyle.normal.textColor = _parent.Science.OnboardScienceList.ContainsKey(exp.ScienceSubject.id) ? Color.green : Color.yellow;
+                else
+                    _experimentButtonStyle.normal.textColor = exp.IsComplete ? Color.green : Color.yellow;
+                if (GUI.Button(buttonRect, exp.ShortDescription + (_parent.Config.CollectLabData ? "" : scienceValueString), _experimentButtonStyle))
                 {
                     RunExperiment(exp);
                 }
             }
             else
             {
-                GUI.Label(buttonRect, exp.ShortDescription + scienceValueString, _experimentLabelStyle);
+                GUI.Label(buttonRect, exp.ShortDescription + (_parent.Config.CollectLabData ? "" : scienceValueString), _experimentLabelStyle);
             }
             int Dif = (int)(((rect.yMax - rect.yMin) - wScale(13)) / 2);
             Rect progressRect = new Rect(wScale(205), rect.yMin + Dif, wScale(50), wScale(13));
-            ProgressBar(progressRect, exp.CompletedScience, exp.TotalScience, exp.CompletedScience + exp.OnboardScience);
+            if (_parent.Config.CollectLabData)
+                ProgressBar(progressRect, 0, 1, _parent.Science.OnboardScienceList.ContainsKey(exp.ScienceSubject.id) ? 1 : 0);
+            else
+                ProgressBar(progressRect, exp.CompletedScience, exp.TotalScience, exp.CompletedScience + exp.OnboardScience);
         }
 
 
@@ -470,9 +493,9 @@ namespace ScienceChecklist
                     var experiment = _filter.DisplayScienceInstances[i];
                     var Id = experiment.ScienceExperiment.id;
 
-                    if (experiment.NextScienceIncome < _parent.Config.ScienceThreshold)
+                    if (experiment.NextScienceIncome < _parent.Config.ScienceThreshold )
                     {
-                        continue;
+                        if (!_parent.Config.CollectLabData || _parent.Science.OnboardScienceList.ContainsKey(experiment.ScienceSubject.id)) continue;
                     }
 
                     if (Id == "crewReport" || Id == "surfaceSample" || Id == "evaReport") // Always pop UI for Kerbal experiments

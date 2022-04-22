@@ -22,6 +22,7 @@ namespace ScienceChecklist {
             private float _scienceThreshold;
 			private bool _playNoise;
 			private bool _showResultsWindow;
+			private bool _collectLabData;
 			private bool _filterDifficultScience;
 			private float _uiScale;
 			private bool _musicStartsMuted;
@@ -41,6 +42,7 @@ namespace ScienceChecklist {
 			public bool StopTimeWarp					{ get { return _stopTimeWarp; }					set { if( _stopTimeWarp != value ) { _stopTimeWarp = value; OnStopTimeWarpChanged( ); } } }
 			public bool PlayNoise						{ get { return _playNoise; }					set { if( _playNoise != value ) { _playNoise = value; OnPlayNoiseChanged( ); } } }
 			public bool ShowResultsWindow				{ get { return _showResultsWindow; }			set { if( _showResultsWindow != value ) { _showResultsWindow = value; OnShowResultsWindowChanged( ); } } }
+			public bool CollectLabData					{ get { return _collectLabData; }				set { if (_collectLabData != value) { _collectLabData = value; OnCollectLabDataChanged(); } } }
 			public bool FilterDifficultScience			{ get { return _filterDifficultScience; }		set { if( _filterDifficultScience != value ) { _filterDifficultScience = value; OnFilterDifficultScienceChanged( ); } } }
 			public float UiScale						{ get { return _uiScale; }						set { if (_uiScale != value) { _uiScale = value; OnUiScaleChanged(); } } }
 			public bool MusicStartsMuted				{ get { return _musicStartsMuted; }				set { if( _musicStartsMuted != value ) { _musicStartsMuted = value; OnMusicStartsMutedChanged( ); } } }
@@ -75,6 +77,7 @@ namespace ScienceChecklist {
 			public event EventHandler StopTimeWarpChanged;
 			public event EventHandler PlayNoiseChanged;
 			public event EventHandler ShowResultsWindowChanged;
+		    public event EventHandler CollectLabDataChanged;
 			public event EventHandler FilterDifficultScienceChanged;
  			public event EventHandler UiScaleChanged;
 			public event EventHandler MusicStartsMutedChanged;
@@ -146,6 +149,14 @@ namespace ScienceChecklist {
 				if( ShowResultsWindowChanged != null )
 				{
 					ShowResultsWindowChanged( this, EventArgs.Empty );
+				}
+			}
+
+			private void OnCollectLabDataChanged()
+			{
+				if ( CollectLabDataChanged != null)
+				{
+					CollectLabDataChanged(this, EventArgs.Empty);
 				}
 			}
 

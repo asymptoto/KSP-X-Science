@@ -167,14 +167,13 @@ namespace ScienceChecklist {
 			if( EnforceLabLanderMode )
 			{
 				CompleteWithoutRecovery = true;
-				HideCompleteExperiments = true;
+				HideCompleteExperiments = !_parent.Config.CollectLabData;
 			}
 			else
 			{
 				CompleteWithoutRecovery = _parent.Config.CompleteWithoutRecovery;
 				HideCompleteExperiments = _parent.Config.HideCompleteExperiments;
 			}
-
 
 
 			if( CompleteWithoutRecovery ) // Lab lander mode.  Complete is a green bar ( Recovered+OnBoard )
