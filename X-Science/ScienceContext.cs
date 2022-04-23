@@ -140,6 +140,15 @@ namespace ScienceChecklist
 							.SelectMany( y => y.GetData( ) ?? new ScienceData[ 0 ] ).ToList( );
 						vesselIds.Add( v.id.ToString( ).ToLower( ).Replace( "-", "" ) );
 						
+						if ( _parent.Config.CollectLabData)
+							foreach ( ModuleScienceLab lab in v.FindPartModulesImplementing<ModuleScienceLab>( ) )
+							{
+								foreach ( string id in lab.ExperimentData )
+								{
+									D.Add(new ScienceData(0, 0, 0, id, ""));
+								}
+							}
+						
 						onboardScience.AddRange( D );
 					}
 
